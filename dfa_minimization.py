@@ -1,26 +1,8 @@
 # dfa mimization
 # example from https://www.tutorialspoint.com/automata_theory/dfa_minimization.htm
-graph = [
-	# edge, next state
-	[1, 2],
-	[0, 3],
-	[4, 5],
-	[4, 5],
-	[4, 5],
-	[5, 5]
-]
-'''
-graph = [
-	# edge, next state
-	[1, 0],
-	[3, 0],
-	[1, 1],
-	[4, 5],
-	[4, 5],
-	[5, 5],
-	
-]
-'''
+from collections import defaultdict
+import copy
+from functools import reduce
 
 # upgrade so a table is used instead of adjaciency list
 # remove states unreachable
@@ -153,6 +135,20 @@ def collectIslands(table):
 		j += 1
 
 	return islands
+def collectIslandParts(table):
+
+	islands = []
+	j = 1
+	while j < len(table):
+		i = 0
+		while i < j:
+			if table[j][i] == 0:
+				islands.append((i, j))
+
+			i += 1
+		j += 1
+
+	return islands
 def collectNeighbors(i, j, table):
 
 	# all neighbors of this form can be marged into a single unique state combo if the union of all neighbors and start cell is taken
@@ -209,15 +205,6 @@ def makeNonEqualStateSingletons(non_equal_states):
 	return [ [state] for state in non_equal_states]
 
 
-NFA = [
-    [[0, 1], [0, 3]],
-    [[0, 2], [1, 2]],
-    [[3, 0], [0]],
-    [[], []],
-
-]
-
-import copy
 def currentStates(current_state):
 
     if len(current_state.split('_')) > 1:
@@ -306,16 +293,138 @@ def convertNFAToDFA(A, accepting_states):
             unadded_states = list(x - y)
 
     return B, F
+def generateUnionFindPairIndecies(island_parts):
 
+	total_states = len(island_parts)
+	table = []
+	for a in range(total_states):
+		row = []
+		for b in range(total_states):
+			if a == b:
+				row.append(3)
+			else:
+				row.append(0)
+		table.append(row)
+
+	pairs = []
+	j = 1
+	while j < len(table):
+		i = 0
+		while i < j:
+			pairs.append([i, j])
+			i += 1
+		j += 1
+	return pairs
+
+def canMerge(pair, id_island_parts):
+	a = set(id_island_parts[ pair[0] ])
+	b = set(id_island_parts[ pair[1] ])
+	c = a.intersection(b)
+	if c != set():
+		return True
+	return False
+def find(parent, child):
+	path_count = 0
+	while child != parent[child]:
+		child = parent[child]
+		path_count += 1
+	return child, path_count
+
+def union(parent, pair, id_island_parts):
+	if canMerge(pair, id_island_parts):
+		parent_node_0, path_count_0 = find(parent, pair[0])
+		parent_node_1, path_count_1 = find(parent, pair[1])
+
+		if path_count_0 == 0 and path_count_1 == 1:
+			parent[ parent_node_0 ] = parent_node_1
+
+		elif path_count_0 == 1 and path_count_1 == 0:
+			parent[ parent_node_1 ] = parent_node_0
+
+		elif path_count_0 == 1 and path_count_1 == 1:
+			parent[ parent_node_1 ] = parent_node_0
+			parent[ pair[1] ] = parent_node_0
+
+		else:
+			parent[ parent_node_1 ] = parent_node_0
+
+	return parent
+
+def makeIslands(parent, island_parts):
+
+	pairs = generateUnionFindPairIndecies(island_parts)
+
+
+	for k, pair in enumerate(pairs):
+
+		parent = union(parent, pairs[k], id_island_parts)
+
+	island_id = defaultdict(int)
+
+	for i, parent_node in enumerate(parent):
+		if island_id[parent_node]:
+			island_id[parent_node].append(i)
+		else:
+			island_id[parent_node] = [i]
+	return island_id
+
+def makeMinimizedDFAStates(islands, island_parts):
+	minimized_dfa_states = []
+	for id_ in islands:
+		dfa_combo_keys = islands[id_]
+
+		minimized_dfa_state = set()
+		for i in dfa_combo_keys:
+			minimized_dfa_state = minimized_dfa_state.union(island_parts[i])
+
+		minimized_dfa_states.append('_'.join(map(str, minimized_dfa_state)))
+	return minimized_dfa_states
+
+
+graph = [
+	# edge, next state
+	[1, 2],
+	[0, 3],
+	[4, 5],
+	[4, 5],
+	[4, 5],
+	[5, 5]
+]
+
+'''
+graph = [
+	# edge, next state
+	[1, 0],
+	[3, 0],
+	[1, 1],
+	[4, 5],
+	[4, 5],
+	[5, 5],
+	
+]
+'''
+
+NFA = [
+    [[0, 1], [0, 3]],
+    [[0, 2], [1, 2]],
+    [[3, 0], [0]],
+    [[], []],
+
+]
+
+# the largest path for each island id is the island
 # use nfa to dfa converter to finish the process
 accepting_states = [2, 3, 4]
-
+# get rid of unused states
 x = bfs(graph, 0, [0, 1], accepting_states)
 #print(x)
 revised_graph = deleteNodes(graph, x)
+
+
+
 #print(revised_graph)
 #exit()
-
+# collect all pairs of equvalent states
 table = tableFilling(graph, accepting_states, markWAcceptingState, markWithPreviouslyMarked)
 '''
 table = [
@@ -328,39 +437,70 @@ table = [
 ]
 '''
 
-islands = collectIslands(table)
-[print(a) for a in table]
-print()
-print(islands)
-# convert into combo states and have a list of all state involved with the combo states
-sets = []
-combo_states = set()
-for island in islands:
-	new_set = set()
-	for tuple_ in island:
-		for state in tuple_:
-			new_set.add(state)
-			combo_states.add(state)
-	sets.append('_'.join([str(i) for i in new_set]))
-print(sets)
-print(list(combo_states))
+#counterexample
+'''
+table = [
+	[3, 0, 0, 0, 0, 0],
+	[0, 3, 0, 0, 0, 0],
+	[1, 1, 3, 0, 0, 0],
+	[1, 1, 0, 3, 0, 0],
+	[0, 1, 0, 0, 3, 0],
+	[1, 1, 1, 1, 1, 3]
+]
+'''
+'''
+table = [
+	[3, 0, 0, 0, 0, 0],
+	[0, 3, 0, 0, 0, 0],
+	[1, 1, 3, 0, 0, 0],
+	[1, 0, 1, 3, 0, 0],
+	[1, 1, 1, 1, 3, 0],
+	[1, 1, 1, 0, 0, 3]
+]
+'''
+island_parts = collectIslandParts(table)
 
+
+
+#print(transitiveProperty(island_parts))
+#print(island_parts)
+#island_parts = [(0, 1), (2, 3), (3, 4), (5, 6), (7, 6)]
+#exit()
+
+#id_island_parts = {i : island_part for i, island_part in enumerate(island_parts)}
+# create longest sequences that satisfy the transitive property(the number of longest sequences = # of states in mimized dfa)
+parent = [ i for i, island_part in enumerate(island_parts) ]
+id_island_parts = { i : island_part for i, island_part in enumerate(island_parts) }
+
+
+islands = makeIslands(parent, island_parts)
+
+#[print(parent_node, i) for i, parent_node in enumerate(parent)]
+equal_minimized_dfa_states = makeMinimizedDFAStates(islands, island_parts)
+
+
+# get the states that are not equal
+equivalent_states = reduce( (lambda x, y: x.union(y)), [ set(map(int, i.split('_'))) for i in  equal_minimized_dfa_states ] )
+#print(equivalent_states)
+#print(equivalent_states)
+#print(set(i for i, edges in enumerate(graph)))
+non_equal_states = [ str(i) for i in list( set( i for i, edges in enumerate(graph) ) - equivalent_states ) ]
+print(non_equal_states)
+
+print(equal_minimized_dfa_states)
+
+mimized_dfa_states = equal_minimized_dfa_states + non_equal_states
+print(mimized_dfa_states)
+exit()
+
+
+
+
+# if pair 1 intersects with pair 2
+	# use union
+#transitiveProperty(island_parts)
 # 234 -> 4 via 0
 # nfa -> dfa would assume 4 is a new state
 # instead of making new states intersect the new state with the current state and if new state in dfa states then use current state
 
 exit()
-equality_combos = collectCombos(table)
-
-states_part_of_combos = getStatesPartOfCombos(equality_combos)
-
-#print(equality_combos)
-#print(states_part_of_combos)
-
-non_equal_states = set(graph.keys())- states_part_of_combos
-#print(non_equal_states)
-non_equal_state_singletons = makeNonEqualStateSingletons(non_equal_states)
-
-#print(non_equal_state_singletons)
-
-transitiveProperty(equality_combos)
