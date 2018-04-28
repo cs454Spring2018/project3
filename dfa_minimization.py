@@ -329,12 +329,14 @@ def find(parent, child):
 		child = parent[child]
 		path_count += 1
 	return child, path_count
-
 def union(parent, pair, id_island_parts):
 	if canMerge(pair, id_island_parts):
+
+		# union and compress path
 		parent_node_0, path_count_0 = find(parent, pair[0])
 		parent_node_1, path_count_1 = find(parent, pair[1])
 
+		# cases for compressing the path
 		if path_count_0 == 0 and path_count_1 == 1:
 			parent[ parent_node_0 ] = parent_node_1
 
@@ -347,7 +349,7 @@ def union(parent, pair, id_island_parts):
 
 		else:
 			parent[ parent_node_1 ] = parent_node_0
-
+		# the distance from all children to their respective parents should = 1
 	return parent
 
 def makeIslands(parent, island_parts):
@@ -359,6 +361,7 @@ def makeIslands(parent, island_parts):
 
 		parent = union(parent, pairs[k], id_island_parts)
 
+	# group each set of children -> parent in parent so each set can be accessed using the parent key 
 	island_id = defaultdict(int)
 
 	for i, parent_node in enumerate(parent):
