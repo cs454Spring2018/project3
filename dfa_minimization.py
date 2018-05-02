@@ -1,6 +1,7 @@
 # dfa mimization
 # example from https://www.tutorialspoint.com/automata_theory/dfa_minimization.htm
 from collections import defaultdict
+from collections import OrderedDict as od
 import copy
 from functools import reduce
 
@@ -223,31 +224,59 @@ def nextStates(A, col, current_states):
         for next_state in A[state][col]:
             current_col.add(next_state)
     #print("HERE")
+    #print(current_col)
     return current_col
 
-def nextComboState(A, combo_state):
+def nextComboState(A, combo_state, minimized_dfa_states):
 
-    next_combo_states = []
-    #print(A[0][0])
- #  #print(A[0])
-    for col, next_states in enumerate(A[0][0]):
-        current_states = currentStates(combo_state)
+	next_combo_states = []
+	replacement_next_combo_states = []
 
-        current_col = nextStates(A, col, current_states)
+	#print(A[0][0])
+	#print(A[0])
+	#exit()
+	#print('getting next combo state')
 
-        next_combo_states.append(('_'.join([str(j) for j in current_states]),
-                                '_'.join([str(i) for i in sorted(copy.deepcopy(current_col))])))
-        #after the new combo state have been collected, intersect them with the minimized dfa states
-        #if it intersects with a min dfa state
-        #	replace it with the dfa state in next_combo_states
-        #print("SUPERHERE")
-    return next_combo_states
+	for col, next_states in enumerate(A[0]):
+		#print(col, next_states, combo_state)
+		current_states = currentStates(combo_state)
+
+		current_col = nextStates(A, col, current_states)
+		next_combo_states.append('_'.join([str(j) for j in current_col]))
+	#print(next_combo_states)
+		#print(minimized_dfa_states)
+		
+		#next_combo_states = [tuple(replacement_next_combo_states)]
+		#print(next_combo_states)
+
+		#exit()
+		#after the new combo state have been collected, intersect them with the minimized dfa states
+		#if it intersects with a min dfa state
+		#	replace it with the dfa state in next_combo_states
+		#print("SUPERHERE")
+	#exit()
+	for i, state in enumerate(next_combo_states):
+		#print(i, state)
+		for j, minimized_dfa_combo_state in enumerate(minimized_dfa_states):
+			if set(state.split('_')).intersection(set(minimized_dfa_combo_state.split('_'))) != set():
+
+				replacement_next_combo_states.append(minimized_dfa_combo_state)
+
+				#print(replacement_next_combo_states)
+
+		#print(next_combo_states)
+		#print(col)
+		#print(minimized_dfa_states)
+	#print(replacement_next_combo_states)
+	#print('end of next combo state')
+	#print()
+	return replacement_next_combo_states
 
 def makeRow(B, combo_state, A, next_combo_states):
 
     row = [] 
     for i, next_state in enumerate(next_combo_states):
-        row.append(next_state[1])
+        row.append(next_state)
     return row
 
 def addAcceptingStatesToF(current_combo_state, F, combo_state, accepting_states):
@@ -259,15 +288,15 @@ def addAcceptingStatesToF(current_combo_state, F, combo_state, accepting_states)
 
 def appendNextComboStates(unadded_states, next_combo_states):
     for j in next_combo_states:
-        unadded_states.append(j[1])
+        unadded_states.append(j)
     return unadded_states
 
 
 
-def convertNFAToDFA(A, accepting_states):
+def convertNFAToDFA(A, accepting_states, minimized_dfa_states):
 
-    unadded_states = ['0']
 
+    unadded_states = [ i for i in minimized_dfa_states]
     F = set()
     B = od([])
     while unadded_states != []:
@@ -276,15 +305,23 @@ def convertNFAToDFA(A, accepting_states):
         combo_state = unadded_states[0]
         del unadded_states[0]
 
-        next_combo_states = nextComboState(A, combo_state)
+        next_combo_states = nextComboState(A, combo_state, minimized_dfa_states)
 
         current_combo_state = next_combo_states[0][0]
 
         F = addAcceptingStatesToF(current_combo_state, F, combo_state, accepting_states)
-
+        #print('combo states')
+        #print(combo_state)
+        #print(makeRow(B, combo_state, A, next_combo_states))
+        #print('end of combo states')
         B[combo_state] = makeRow(B, combo_state, A, next_combo_states)
+        #print('after adding')
+        #print(unadded_states, next_combo_states)
 
         unadded_states = appendNextComboStates(unadded_states, next_combo_states)
+        #print(unadded_states)
+
+        #print()
 
         x = set(unadded_states)
         y = set(B.keys())
@@ -393,6 +430,26 @@ graph = [
 	[4, 5],
 	[5, 5]
 ]
+def convertToNFAStyle(dfa):
+
+	new_nfa = []
+	for state in dfa:
+		row = []
+		for next_state in state:
+			row.append([next_state])
+		new_nfa.append(row)
+	return new_nfa
+
+def convertStringsInDFAToNumbers(minimized_dfa, string_int):
+
+	number_minimized_dfa = []
+	for key in minimized_dfa:
+		next_states_numbers = []
+		for next_states in minimized_dfa[key]:
+
+			next_states_numbers.append(string_int[next_states])
+		number_minimized_dfa.append(next_states_numbers)
+	return number_minimized_dfa
 
 '''
 graph = [
@@ -488,13 +545,38 @@ equivalent_states = reduce( (lambda x, y: x.union(y)), [ set(map(int, i.split('_
 #print(equivalent_states)
 #print(set(i for i, edges in enumerate(graph)))
 non_equal_states = [ str(i) for i in list( set( i for i, edges in enumerate(graph) ) - equivalent_states ) ]
-print(non_equal_states)
+#print(non_equal_states)
 
-print(equal_minimized_dfa_states)
+#print(equal_minimized_dfa_states)
 
-mimized_dfa_states = equal_minimized_dfa_states + non_equal_states
-print(mimized_dfa_states)
-exit()
+minimized_dfa_states = equal_minimized_dfa_states + non_equal_states
+#print(minimized_dfa_states)
+
+nfa_style = convertToNFAStyle(graph)
+#[print(i) for i in nfa_style]
+#print()
+(DFA, F) = convertNFAToDFA(nfa_style, accepting_states, minimized_dfa_states)
+
+#[print(i, DFA[i]) for i in DFA]
+#print(DFA)
+#print(minimized_dfa_states)
+string_int = {key : i for i, key in enumerate(list(DFA.keys()))}
+#print(string_int)
+number_minimized_DFA = convertStringsInDFAToNumbers(DFA, string_int)
+[print(i, number_minimized_DFA[i]) for i, next_states in enumerate(number_minimized_DFA)]
+#print(accepting_states)
+replacement_next_combo_states = set()
+for i, state in enumerate(accepting_states):
+		#print(i, state)
+		for j, minimized_dfa_combo_state in enumerate(minimized_dfa_states):
+			if set(str(state)).intersection(set(minimized_dfa_combo_state.split('_'))) != set():
+
+				replacement_next_combo_states.add(minimized_dfa_combo_state)
+#print(list(replacement_next_combo_states))
+minimized_final_states = []
+for i in replacement_next_combo_states:
+	minimized_final_states.append(string_int[i])
+print(minimized_final_states)
 
 
 
