@@ -389,7 +389,7 @@ def union(parent, pair, id_island_parts):
 		# the distance from all children to their respective parents should = 1
 	return parent
 
-def makeIslands(parent, island_parts):
+def makeIslands(parent, island_parts, id_island_parts):
 
 	pairs = generateUnionFindPairIndecies(island_parts)
 
@@ -526,14 +526,14 @@ island_parts = collectIslandParts(table)
 #print(island_parts)
 #island_parts = [(0, 1), (2, 3), (3, 4), (5, 6), (7, 6)]
 #exit()
-
+#print(island_parts)
 #id_island_parts = {i : island_part for i, island_part in enumerate(island_parts)}
 # create longest sequences that satisfy the transitive property(the number of longest sequences = # of states in mimized dfa)
 parent = [ i for i, island_part in enumerate(island_parts) ]
 id_island_parts = { i : island_part for i, island_part in enumerate(island_parts) }
+print(id_island_parts)
 
-
-islands = makeIslands(parent, island_parts)
+islands = makeIslands(parent, island_parts, id_island_parts)
 
 #[print(parent_node, i) for i, parent_node in enumerate(parent)]
 equal_minimized_dfa_states = makeMinimizedDFAStates(islands, island_parts)
