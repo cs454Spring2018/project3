@@ -11,20 +11,23 @@ def union(parent_graph, pair):
 	# union and compress path
 	parent_node_0, path_count_0 = findChildAndLength(parent_graph['parent'], pair[0])
 	parent_node_1, path_count_1 = findChildAndLength(parent_graph['parent'], pair[1])
-	print(parent_node_0, path_count_0, parent_node_1, path_count_1)
+
+	parent_graph['parent'][ parent_node_1 ] = parent_node_0
+	# does not work because it permits a path count >= 1
+	#print(parent_node_0, path_count_0, parent_node_1, path_count_1)
 	# cases for compressing the path
-	if path_count_0 == 0 and path_count_1 == 1:
-		parent_graph['parent'][ parent_node_0 ] = parent_node_1
+	#if path_count_0 == 0 and path_count_1 == 1:
+	#	parent_graph['parent'][ parent_node_0 ] = parent_node_1
 
-	elif path_count_0 == 1 and path_count_1 == 0:
-		parent_graph['parent'][ parent_node_1 ] = parent_node_0
+	#elif path_count_0 == 1 and path_count_1 == 0:
+	#	parent_graph['parent'][ parent_node_1 ] = parent_node_0
 
-	elif path_count_0 == 1 and path_count_1 == 1:
-		parent_graph['parent'][ parent_node_1 ] = parent_node_0
-		parent_graph['parent'][ pair[1] ] = parent_node_0
+	#elif path_count_0 == 1 and path_count_1 == 1:
+	#	parent_graph['parent'][ parent_node_1 ] = parent_node_0
+	#	parent_graph['parent'][ pair[1] ] = parent_node_0
 
-	else:
-		parent_graph['parent'][ parent_node_1 ] = parent_node_0
+	#else:
+	#	parent_graph['parent'][ parent_node_1 ] = parent_node_0
 	# the distance from all children to their respective parents should = 1
 	return parent_graph['parent']
 
@@ -40,6 +43,7 @@ graph = [
 	[4, 5],
 	[5, 5]
 ]
+
 #parent_graph['parent']
 # island_parts is a list of index pairs
 parent_graph = od([
@@ -51,12 +55,29 @@ print(parent_graph['parent'])
 parent_graph['parent'] = union(parent_graph, (1, 2))
 #print(parent_graph['parent'])
 parent_graph['parent'] = union(parent_graph, (0, 1))
-print(parent_graph['parent'])
-parent_graph['parent'] = union(parent_graph, (2, 3))
-print(parent_graph['parent'])
-parent_graph['parent'] = union(parent_graph, (2, 4))
-print(parent_graph['parent'])
-parent_graph['parent'] = union(parent_graph, (1, 0))
+
 print(parent_graph['parent'])
 
-print(getTransitions(parent_graph, 1))
+def compressPaths(parents):
+
+	indicies = [i for i, parent in enumerate(parents)]
+	#print(indicies)
+	for i in indicies:
+		parent, path_count = findChildAndLength(parents, i)
+		if path_count >= 2:
+			parents[i] = parent
+	return parents
+print([a for a, parent in enumerate(parent_graph['parent'])])
+parent_graph['parent'] = compressPaths(parent_graph['parent'])
+
+print(parent_graph['parent'])
+
+#parent_graph['parent'] = union(parent_graph, (2, 3))
+#print(parent_graph['parent'])
+#parent_graph['parent'] = union(parent_graph, (2, 4))
+#print(parent_graph['parent'])
+#parent_graph['parent'] = union(parent_graph, (1, 0))
+#print(parent_graph['parent'])
+#for i, parent in enumerate(parent_graph['parent'])
+
+#print(getTransitions(parent_graph, 1))
