@@ -566,8 +566,8 @@ island_parts = collectIslandParts(table)
 
 
 #print(transitiveProperty(island_parts))
-print(island_parts)
-print()
+#print(island_parts)
+#print()
 #island_parts = [(0, 1), (2, 3), (3, 4), (5, 6), (7, 6)]
 #exit()
 #print(island_parts)
@@ -578,7 +578,7 @@ id_island_parts = { i : island_part for i, island_part in enumerate(island_parts
 #print(id_island_parts)
 
 islands = makeIslands(parent, island_parts, id_island_parts)
-print(islands)
+#print(islands)
 #[print(parent_node, i) for i, parent_node in enumerate(parent)]
 equal_minimized_dfa_states = makeMinimizedDFAStates(islands, island_parts)
 
