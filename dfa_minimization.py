@@ -325,35 +325,33 @@ def convertNFAToDFA(A, accepting_states, minimized_dfa_states):
 		#print()
 		#print('unadded_states')
 		#print(unadded_states)
+		# need to keep all items of unadded_states in same order after the set intersection and set subtraction have been performs
 		# enumerate the first locations of each state in unadded_states
-		enumerated_unadded_states = od([])#[(state, i) for i, state in enumerate(unadded_states)]
+		enumerated_unadded_states = od([])
+		enumerated_unadded_states_keys = enumerated_unadded_states.keys()
 		for i, state in enumerate(unadded_states):
-			if state not in enumerated_unadded_states.keys():
+			if state not in enumerated_unadded_states_keys:
 				enumerated_unadded_states[state] = i
 
 		#print(enumerated_unadded_states)
 		#print()
-		x = set(unadded_states)
-		y = set(B.keys())
 		B_keys = B.keys()
-		enumerated_unadded_states_keys = enumerated_unadded_states.keys()
+
+		x = set(unadded_states)
+		y = set(B_keys)
 		#print(unadded_states)
-		new_unadded_states = []#list(copy.deepcopy(set(unadded_states)))
+		new_unadded_states = []
 		#print(new_unadded_states)
 		if list(x & y) != []:
-			#print('a')
 			# make sure this is the length of the subtracted list
-			length_of_subtracted_list = len(list(x - y))
+			subtracted_list = list(x - y)
+			length_of_subtracted_list = len(subtracted_list)
 			new_unadded_states = [j for j in range(length_of_subtracted_list)]
-			#print(new_unadded_states)
-			for state in enumerated_unadded_states_keys:
+			for state in subtracted_list:
 
-				if state not in B_keys:
-					#print(state[1])
-					# use the original order of the states in unadded_states to put them in the same order
-					# after deleting the states from B.keys()
-					new_unadded_states[enumerated_unadded_states[state]] = state#.append(state)
-			#unadded_states = list(x - y)
+				# use the original order of the states in unadded_states to put them in the same order
+				# after deleting the states from B_keys
+				new_unadded_states[enumerated_unadded_states[state]] = state
 		#print(new_unadded_states)
 		unadded_states = new_unadded_states
 		#print(unadded_states)
