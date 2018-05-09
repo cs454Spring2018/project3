@@ -472,11 +472,13 @@ graph = [
 	[5, 5]
 ]
 '''
+
 graph = [
-	[1, 1],
-	[2, 2],
-	[0, 0]
+	[2],
+	[2],
+	[0]
 ]
+
 def convertToNFAStyle(dfa):
 
 	new_nfa = []
@@ -489,8 +491,8 @@ def convertToNFAStyle(dfa):
 
 def convertStringsInDFAToNumbers(minimized_dfa, string_int):
 
-	print(minimized_dfa)
-	print(string_int)
+	#print(minimized_dfa)
+	#print(string_int)
 	number_minimized_dfa = []
 	for key in minimized_dfa:
 		next_states_numbers = []
@@ -523,103 +525,111 @@ NFA = [
 '''
 # the largest path for each island id is the island
 # use nfa to dfa converter to finish the process
-accepting_states = [2, 3, 4]
 # get rid of unused states
-x = bfs(graph, 0, [0, 1], accepting_states)
-#print(x)
-revised_graph = deleteNodes(graph, x)
+def minimizeDFA(dfa, alphabet, start_state, accepting_states):
+	x = bfs(dfa, start_state, alphabet, accepting_states)
+
+	#print(x)
+	revised_graph = deleteNodes(dfa, x)
 
 
 
-#print(revised_graph)
-#exit()
-# collect all pairs of equvalent states
-table = tableFilling(graph, accepting_states, markWAcceptingState, markWithPreviouslyMarked)
-'''
-table = [
-	[3, 0, 0, 0, 0, 0],
-	[0, 3, 0, 0, 0, 0],
-	[0, 0, 3, 0, 0, 0],
-	[0, 1, 0, 3, 0, 0],
-	[1, 1, 0, 0, 3, 0],
-	[1, 1, 1, 1, 1, 3]
-]
-'''
+	#print(revised_graph)
+	#exit()
+	# collect all pairs of equvalent states
+	table = tableFilling(dfa, accepting_states, markWAcceptingState, markWithPreviouslyMarked)
+	'''
+	table = [
+		[3, 0, 0, 0, 0, 0],
+		[0, 3, 0, 0, 0, 0],
+		[0, 0, 3, 0, 0, 0],
+		[0, 1, 0, 3, 0, 0],
+		[1, 1, 0, 0, 3, 0],
+		[1, 1, 1, 1, 1, 3]
+	]
+	'''
 
-#counterexample
-'''
-table = [
-	[3, 0, 0, 0, 0, 0],
-	[0, 3, 0, 0, 0, 0],
-	[1, 1, 3, 0, 0, 0],
-	[1, 1, 0, 3, 0, 0],
-	[0, 1, 0, 0, 3, 0],
-	[1, 1, 1, 1, 1, 3]
-]
-'''
-'''
-table = [
-	[3, 0, 0, 0, 0, 0],
-	[0, 3, 0, 0, 0, 0],
-	[1, 1, 3, 0, 0, 0],
-	[1, 0, 1, 3, 0, 0],
-	[1, 1, 1, 1, 3, 0],
-	[1, 1, 1, 0, 0, 3]
-]
-'''
-island_parts = collectIslandParts(table)
-
-
-
-#print(transitiveProperty(island_parts))
-#print(island_parts)
-#print()
-#island_parts = [(0, 1), (2, 3), (3, 4), (5, 6), (7, 6)]
-#exit()
-#print(island_parts)
-#id_island_parts = {i : island_part for i, island_part in enumerate(island_parts)}
-# create longest sequences that satisfy the transitive property(the number of longest sequences = # of states in mimized dfa)
-parent = [ i for i, island_part in enumerate(island_parts) ]
-id_island_parts = { i : island_part for i, island_part in enumerate(island_parts) }
-#print(id_island_parts)
-
-islands = makeIslands(parent, island_parts, id_island_parts)
-#print(islands)
-#[print(parent_node, i) for i, parent_node in enumerate(parent)]
-equal_minimized_dfa_states = makeMinimizedDFAStates(islands, island_parts)
+	#counterexample
+	'''
+	table = [
+		[3, 0, 0, 0, 0, 0],
+		[0, 3, 0, 0, 0, 0],
+		[1, 1, 3, 0, 0, 0],
+		[1, 1, 0, 3, 0, 0],
+		[0, 1, 0, 0, 3, 0],
+		[1, 1, 1, 1, 1, 3]
+	]
+	'''
+	'''
+	table = [
+		[3, 0, 0, 0, 0, 0],
+		[0, 3, 0, 0, 0, 0],
+		[1, 1, 3, 0, 0, 0],
+		[1, 0, 1, 3, 0, 0],
+		[1, 1, 1, 1, 3, 0],
+		[1, 1, 1, 0, 0, 3]
+	]
+	'''
+	island_parts = collectIslandParts(table)
 
 
-# get the states that are not equal
-#print(equal_minimized_dfa_states)
-equivalent_states = []
-if equal_minimized_dfa_states != []:
 
-	equivalent_states = reduce( (lambda x, y: x.union(y)), [ set(map(int, i.split('_'))) for i in  equal_minimized_dfa_states ] )
-else:
-	equivalent_states = set()
+	#print(transitiveProperty(island_parts))
+	#print(island_parts)
+	#print()
+	#island_parts = [(0, 1), (2, 3), (3, 4), (5, 6), (7, 6)]
+	#exit()
+	#print(island_parts)
+	#id_island_parts = {i : island_part for i, island_part in enumerate(island_parts)}
+	# create longest sequences that satisfy the transitive property(the number of longest sequences = # of states in mimized dfa)
+	parent = [ i for i, island_part in enumerate(island_parts) ]
+	id_island_parts = { i : island_part for i, island_part in enumerate(island_parts) }
+	#print(id_island_parts)
 
-#print(equivalent_states)
-#print(equivalent_states)
-#print(set(i for i, edges in enumerate(graph)))
-non_equal_states = [ str(i) for i in list( set( i for i, edges in enumerate(graph) ) - equivalent_states ) ]
-#print(non_equal_states)
+	islands = makeIslands(parent, island_parts, id_island_parts)
+	#print(islands)
+	#[print(parent_node, i) for i, parent_node in enumerate(parent)]
+	equal_minimized_dfa_states = makeMinimizedDFAStates(islands, island_parts)
 
-#print(equal_minimized_dfa_states)
 
-minimized_dfa_states = equal_minimized_dfa_states + non_equal_states
-print(minimized_dfa_states)
-#exit()
-nfa_style = convertToNFAStyle(graph)
-print(nfa_style)
-(DFA, F) = convertNFAToDFA(nfa_style, accepting_states, minimized_dfa_states)
+	# get the states that are not equal
+	#print(equal_minimized_dfa_states)
+	equivalent_states = []
+	if equal_minimized_dfa_states != []:
 
-#[print(i, DFA[i]) for i in DFA]
-#print(DFA)
-#print(minimized_dfa_states)
-string_int = {key : i for i, key in enumerate(list(DFA.keys()))}
-#print(string_int)
-#print(DFA)
-print()
-number_minimized_DFA = convertStringsInDFAToNumbers(DFA, string_int)
-#print(number_minimized_DFA)
-[print(i, number_minimized_DFA[i]) for i, next_states in enumerate(number_minimized_DFA)]
+		equivalent_states = reduce( (lambda x, y: x.union(y)), [ set(map(int, i.split('_'))) for i in  equal_minimized_dfa_states ] )
+	else:
+		equivalent_states = set()
+
+	#print(equivalent_states)
+	#print(equivalent_states)
+	#print(set(i for i, edges in enumerate(graph)))
+	non_equal_states = [ str(i) for i in list( set( i for i, edges in enumerate(graph) ) - equivalent_states ) ]
+	#print(non_equal_states)
+
+	#print(equal_minimized_dfa_states)
+
+	minimized_dfa_states = equal_minimized_dfa_states + non_equal_states
+	#print(minimized_dfa_states)
+	#exit()
+	nfa_style = convertToNFAStyle(graph)
+	#print(nfa_style)
+	(DFA, F) = convertNFAToDFA(nfa_style, accepting_states, minimized_dfa_states)
+
+	#[print(i, DFA[i]) for i in DFA]
+	#print(DFA)
+	#print(minimized_dfa_states)
+	string_int = {key : i for i, key in enumerate(list(DFA.keys()))}
+	#print(string_int)
+	#print(DFA)
+	#print()
+	number_minimized_DFA = convertStringsInDFAToNumbers(DFA, string_int)
+	#print(number_minimized_DFA)
+	#[print(i, number_minimized_DFA[i]) for i, next_states in enumerate(number_minimized_DFA)]
+	return number_minimized_DFA
+	
+accepting_states = [2, 3, 4]
+alphabet = [0]
+start_state = 0
+final_minimized_dfa = minimizeDFA(graph, alphabet, start_state, accepting_states)
+[print(i, final_minimized_dfa[i]) for i, next_states in enumerate(final_minimized_dfa)]
