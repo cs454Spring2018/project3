@@ -406,29 +406,15 @@ def compressPaths(parents):
 			parents[i] = parent
 	return parents
 
-def union(parent, pair, id_island_parts):
-	if canMerge(pair, id_island_parts):
+def union(parent, pair):
 
-		# union and compress path
-		parent_node_0, path_count_0 = findChildAndLength(parent, pair[0])
-		parent_node_1, path_count_1 = findChildAndLength(parent, pair[1])
+	# union
+	parent_node_0, path_count_0 = findChildAndLength(parent, pair[0])
+	parent_node_1, path_count_1 = findChildAndLength(parent, pair[1])
 
-		parent[ parent_node_1 ] = parent_node_0
+	parent[ parent_node_1 ] = parent_node_0
 
-		# cases for compressing the path
-		#if path_count_0 == 0 and path_count_1 == 1:
-		#	parent[ parent_node_0 ] = parent_node_1
-
-		#elif path_count_0 == 1 and path_count_1 == 0:
-		#	parent[ parent_node_1 ] = parent_node_0
-
-		#elif path_count_0 == 1 and path_count_1 == 1:
-		#	parent[ parent_node_1 ] = parent_node_0
-		#	parent[ pair[1] ] = parent_node_0
-
-		#else:
-		#	parent[ parent_node_1 ] = parent_node_0
-		# the distance from all children to their respective parents should = 1
+		
 	return parent
 
 def makeIslands(parent, island_parts, id_island_parts):
@@ -438,7 +424,11 @@ def makeIslands(parent, island_parts, id_island_parts):
 
 	for k, pair in enumerate(pairs):
 
-		parent = union(parent, pairs[k], id_island_parts)
+		if canMerge(pair, id_island_parts):
+
+			parent = union(parent, pairs[k])
+
+	# the distance from all children to their respective parents should = 1
 	parent = compressPaths(parent)
 
 	# group each set of children -> parent in parent so each set can be accessed using the parent key 
@@ -597,8 +587,7 @@ minimized_dfa_states = equal_minimized_dfa_states + non_equal_states
 #print(minimized_dfa_states)
 
 nfa_style = convertToNFAStyle(graph)
-#[print(i) for i in nfa_style]
-#print()
+
 (DFA, F) = convertNFAToDFA(nfa_style, accepting_states, minimized_dfa_states)
 
 #[print(i, DFA[i]) for i in DFA]
@@ -609,31 +598,3 @@ string_int = {key : i for i, key in enumerate(list(DFA.keys()))}
 number_minimized_DFA = convertStringsInDFAToNumbers(DFA, string_int)
 #print(number_minimized_DFA)
 [print(i, number_minimized_DFA[i]) for i, next_states in enumerate(number_minimized_DFA)]
-#print(accepting_states)
-'''
-replacement_next_combo_states = set()
-for i, state in enumerate(accepting_states):
-		#print(i, state)
-		for j, minimized_dfa_combo_state in enumerate(minimized_dfa_states):
-			if set(str(state)).intersection(set(minimized_dfa_combo_state.split('_'))) != set():
-
-				replacement_next_combo_states.add(minimized_dfa_combo_state)
-#print(list(replacement_next_combo_states))
-minimized_final_states = []
-print(replacement_next_combo_states)
-
-for i in replacement_next_combo_states:
-	minimized_final_states.append(string_int[i])
-print(minimized_final_states)
-'''
-
-
-
-# if pair 1 intersects with pair 2
-	# use union
-#transitiveProperty(island_parts)
-# 234 -> 4 via 0
-# nfa -> dfa would assume 4 is a new state
-# instead of making new states intersect the new state with the current state and if new state in dfa states then use current state
-
-exit()
