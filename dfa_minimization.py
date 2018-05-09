@@ -236,7 +236,7 @@ def nextComboState(A, combo_state, minimized_dfa_states):
 	#print(A[0])
 	#exit()
 	#print('getting next combo state')
-
+	#print(combo_state)
 	for col, next_states in enumerate(A[0]):
 		#print(col, next_states, combo_state)
 		current_states = currentStates(combo_state)
@@ -255,6 +255,7 @@ def nextComboState(A, combo_state, minimized_dfa_states):
 		#	replace it with the dfa state in next_combo_states
 		#print("SUPERHERE")
 	#exit()
+
 	for i, state in enumerate(next_combo_states):
 		#print(i, state)
 		for j, minimized_dfa_combo_state in enumerate(minimized_dfa_states):
@@ -295,41 +296,69 @@ def appendNextComboStates(unadded_states, next_combo_states):
 
 def convertNFAToDFA(A, accepting_states, minimized_dfa_states):
 
+	#print(minimized_dfa_states)
+	unadded_states = [ i for i in minimized_dfa_states]
+	F = set()
+	B = od([])
+	while unadded_states != []:
 
-    unadded_states = [ i for i in minimized_dfa_states]
-    F = set()
-    B = od([])
-    while unadded_states != []:
 
+		combo_state = unadded_states[0]
+		del unadded_states[0]
+		#print(combo_state)
+		next_combo_states = nextComboState(A, combo_state, minimized_dfa_states)
 
-        combo_state = unadded_states[0]
-        del unadded_states[0]
+		current_combo_state = next_combo_states[0][0]
 
-        next_combo_states = nextComboState(A, combo_state, minimized_dfa_states)
+		F = addAcceptingStatesToF(current_combo_state, F, combo_state, accepting_states)
+		#print('combo states')
+		#print(combo_state)
+		#print(makeRow(B, combo_state, A, next_combo_states))
+		#print('end of combo states')
+		B[combo_state] = makeRow(B, combo_state, A, next_combo_states)
+		#print('after adding')
+		#print(unadded_states, next_combo_states)
 
-        current_combo_state = next_combo_states[0][0]
+		unadded_states = appendNextComboStates(unadded_states, next_combo_states)
+		#print(unadded_states)
 
-        F = addAcceptingStatesToF(current_combo_state, F, combo_state, accepting_states)
-        #print('combo states')
-        #print(combo_state)
-        #print(makeRow(B, combo_state, A, next_combo_states))
-        #print('end of combo states')
-        B[combo_state] = makeRow(B, combo_state, A, next_combo_states)
-        #print('after adding')
-        #print(unadded_states, next_combo_states)
+		#print()
+		#print('unadded_states')
+		#print(unadded_states)
+		# enumerate the first locations of each state in unadded_states
+		enumerated_unadded_states = od([])#[(state, i) for i, state in enumerate(unadded_states)]
+		for i, state in enumerate(unadded_states):
+			if state not in enumerated_unadded_states.keys():
+				enumerated_unadded_states[state] = i
 
-        unadded_states = appendNextComboStates(unadded_states, next_combo_states)
-        #print(unadded_states)
+		#print(enumerated_unadded_states)
+		#print()
+		x = set(unadded_states)
+		y = set(B.keys())
+		B_keys = B.keys()
+		enumerated_unadded_states_keys = enumerated_unadded_states.keys()
+		#print(unadded_states)
+		new_unadded_states = []#list(copy.deepcopy(set(unadded_states)))
+		#print(new_unadded_states)
+		if list(x & y) != []:
+			#print('a')
+			# make sure this is the length of the subtracted list
+			length_of_subtracted_list = len(list(x - y))
+			new_unadded_states = [j for j in range(length_of_subtracted_list)]
+			#print(new_unadded_states)
+			for state in enumerated_unadded_states_keys:
 
-        #print()
-
-        x = set(unadded_states)
-        y = set(B.keys())
-        if list(x & y) != []:
-
-            unadded_states = list(x - y)
-
-    return B, F
+				if state not in B_keys:
+					#print(state[1])
+					# use the original order of the states in unadded_states to put them in the same order
+					# after deleting the states from B.keys()
+					new_unadded_states[enumerated_unadded_states[state]] = state#.append(state)
+			#unadded_states = list(x - y)
+		#print(new_unadded_states)
+		unadded_states = new_unadded_states
+		#print(unadded_states)
+		#exit()
+	return B, F
 def generateUnionFindPairIndecies(island_parts):
 
 	total_states = len(island_parts)
@@ -360,32 +389,45 @@ def canMerge(pair, id_island_parts):
 	if c != set():
 		return True
 	return False
-def find(parent, child):
+def findChildAndLength(parent, child):
 	path_count = 0
 	while child != parent[child]:
 		child = parent[child]
 		path_count += 1
 	return child, path_count
+
+def compressPaths(parents):
+
+	indicies = [i for i, parent in enumerate(parents)]
+	#print(indicies)
+	for i in indicies:
+		parent, path_count = findChildAndLength(parents, i)
+		if path_count >= 2:
+			parents[i] = parent
+	return parents
+
 def union(parent, pair, id_island_parts):
 	if canMerge(pair, id_island_parts):
 
 		# union and compress path
-		parent_node_0, path_count_0 = find(parent, pair[0])
-		parent_node_1, path_count_1 = find(parent, pair[1])
+		parent_node_0, path_count_0 = findChildAndLength(parent, pair[0])
+		parent_node_1, path_count_1 = findChildAndLength(parent, pair[1])
+
+		parent[ parent_node_1 ] = parent_node_0
 
 		# cases for compressing the path
-		if path_count_0 == 0 and path_count_1 == 1:
-			parent[ parent_node_0 ] = parent_node_1
+		#if path_count_0 == 0 and path_count_1 == 1:
+		#	parent[ parent_node_0 ] = parent_node_1
 
-		elif path_count_0 == 1 and path_count_1 == 0:
-			parent[ parent_node_1 ] = parent_node_0
+		#elif path_count_0 == 1 and path_count_1 == 0:
+		#	parent[ parent_node_1 ] = parent_node_0
 
-		elif path_count_0 == 1 and path_count_1 == 1:
-			parent[ parent_node_1 ] = parent_node_0
-			parent[ pair[1] ] = parent_node_0
+		#elif path_count_0 == 1 and path_count_1 == 1:
+		#	parent[ parent_node_1 ] = parent_node_0
+		#	parent[ pair[1] ] = parent_node_0
 
-		else:
-			parent[ parent_node_1 ] = parent_node_0
+		#else:
+		#	parent[ parent_node_1 ] = parent_node_0
 		# the distance from all children to their respective parents should = 1
 	return parent
 
@@ -397,6 +439,7 @@ def makeIslands(parent, island_parts, id_island_parts):
 	for k, pair in enumerate(pairs):
 
 		parent = union(parent, pairs[k], id_island_parts)
+	parent = compressPaths(parent)
 
 	# group each set of children -> parent in parent so each set can be accessed using the parent key 
 	island_id = defaultdict(int)
@@ -523,7 +566,8 @@ island_parts = collectIslandParts(table)
 
 
 #print(transitiveProperty(island_parts))
-#print(island_parts)
+print(island_parts)
+print()
 #island_parts = [(0, 1), (2, 3), (3, 4), (5, 6), (7, 6)]
 #exit()
 #print(island_parts)
@@ -531,10 +575,10 @@ island_parts = collectIslandParts(table)
 # create longest sequences that satisfy the transitive property(the number of longest sequences = # of states in mimized dfa)
 parent = [ i for i, island_part in enumerate(island_parts) ]
 id_island_parts = { i : island_part for i, island_part in enumerate(island_parts) }
-print(id_island_parts)
+#print(id_island_parts)
 
 islands = makeIslands(parent, island_parts, id_island_parts)
-
+print(islands)
 #[print(parent_node, i) for i, parent_node in enumerate(parent)]
 equal_minimized_dfa_states = makeMinimizedDFAStates(islands, island_parts)
 
@@ -563,8 +607,10 @@ nfa_style = convertToNFAStyle(graph)
 string_int = {key : i for i, key in enumerate(list(DFA.keys()))}
 #print(string_int)
 number_minimized_DFA = convertStringsInDFAToNumbers(DFA, string_int)
+#print(number_minimized_DFA)
 [print(i, number_minimized_DFA[i]) for i, next_states in enumerate(number_minimized_DFA)]
 #print(accepting_states)
+'''
 replacement_next_combo_states = set()
 for i, state in enumerate(accepting_states):
 		#print(i, state)
@@ -574,10 +620,12 @@ for i, state in enumerate(accepting_states):
 				replacement_next_combo_states.add(minimized_dfa_combo_state)
 #print(list(replacement_next_combo_states))
 minimized_final_states = []
+print(replacement_next_combo_states)
+
 for i in replacement_next_combo_states:
 	minimized_final_states.append(string_int[i])
 print(minimized_final_states)
-
+'''
 
 
 
