@@ -309,7 +309,7 @@ def convertNFAToDFA(A, accepting_states, minimized_dfa_states):
 		next_combo_states = nextComboState(A, combo_state, minimized_dfa_states)
 
 		current_combo_state = next_combo_states[0][0]
-
+		#print(current_combo_state)
 		F = addAcceptingStatesToF(current_combo_state, F, combo_state, accepting_states)
 		#print('combo states')
 		#print(combo_state)
@@ -320,6 +320,7 @@ def convertNFAToDFA(A, accepting_states, minimized_dfa_states):
 		#print(unadded_states, next_combo_states)
 
 		unadded_states = appendNextComboStates(unadded_states, next_combo_states)
+		#print('unadded_states')
 		#print(unadded_states)
 
 		#print()
@@ -330,13 +331,17 @@ def convertNFAToDFA(A, accepting_states, minimized_dfa_states):
 		enumerated_unadded_states = od([])
 		enumerated_unadded_states_keys = enumerated_unadded_states.keys()
 		for i, state in enumerate(unadded_states):
+			# only set the first time state has been visited from unadded_states
 			if state not in enumerated_unadded_states_keys:
 				enumerated_unadded_states[state] = i
 
 		#print(enumerated_unadded_states)
 		#print()
 		B_keys = B.keys()
-
+		#print('B')
+		#print(B)
+		#print(list(B_keys))
+		#print()
 		x = set(unadded_states)
 		y = set(B_keys)
 		#print(unadded_states)
@@ -345,6 +350,8 @@ def convertNFAToDFA(A, accepting_states, minimized_dfa_states):
 		if list(x & y) != []:
 			# make sure this is the length of the subtracted list
 			subtracted_list = list(x - y)
+			#print('subtracted list')
+			#print(subtracted_list)
 			length_of_subtracted_list = len(subtracted_list)
 			new_unadded_states = [j for j in range(length_of_subtracted_list)]
 			for state in subtracted_list:
@@ -352,8 +359,11 @@ def convertNFAToDFA(A, accepting_states, minimized_dfa_states):
 				# use the original order of the states in unadded_states to put them in the same order
 				# after deleting the states from B_keys
 				new_unadded_states[enumerated_unadded_states[state]] = state
+		else:
+			new_unadded_states = unadded_states
 		#print(new_unadded_states)
 		unadded_states = new_unadded_states
+		#print('finished')
 		#print(unadded_states)
 		#exit()
 	return B, F
@@ -451,7 +461,7 @@ def makeMinimizedDFAStates(islands, island_parts):
 		minimized_dfa_states.append('_'.join(map(str, minimized_dfa_state)))
 	return minimized_dfa_states
 
-
+'''
 graph = [
 	# edge, next state
 	[1, 2],
@@ -460,6 +470,12 @@ graph = [
 	[4, 5],
 	[4, 5],
 	[5, 5]
+]
+'''
+graph = [
+	[1, 1],
+	[2, 2],
+	[0, 0]
 ]
 def convertToNFAStyle(dfa):
 
@@ -473,6 +489,8 @@ def convertToNFAStyle(dfa):
 
 def convertStringsInDFAToNumbers(minimized_dfa, string_int):
 
+	print(minimized_dfa)
+	print(string_int)
 	number_minimized_dfa = []
 	for key in minimized_dfa:
 		next_states_numbers = []
@@ -494,7 +512,7 @@ graph = [
 	
 ]
 '''
-
+'''
 NFA = [
     [[0, 1], [0, 3]],
     [[0, 2], [1, 2]],
@@ -502,7 +520,7 @@ NFA = [
     [[], []],
 
 ]
-
+'''
 # the largest path for each island id is the island
 # use nfa to dfa converter to finish the process
 accepting_states = [2, 3, 4]
@@ -572,7 +590,14 @@ equal_minimized_dfa_states = makeMinimizedDFAStates(islands, island_parts)
 
 
 # get the states that are not equal
-equivalent_states = reduce( (lambda x, y: x.union(y)), [ set(map(int, i.split('_'))) for i in  equal_minimized_dfa_states ] )
+#print(equal_minimized_dfa_states)
+equivalent_states = []
+if equal_minimized_dfa_states != []:
+
+	equivalent_states = reduce( (lambda x, y: x.union(y)), [ set(map(int, i.split('_'))) for i in  equal_minimized_dfa_states ] )
+else:
+	equivalent_states = set()
+
 #print(equivalent_states)
 #print(equivalent_states)
 #print(set(i for i, edges in enumerate(graph)))
@@ -582,10 +607,10 @@ non_equal_states = [ str(i) for i in list( set( i for i, edges in enumerate(grap
 #print(equal_minimized_dfa_states)
 
 minimized_dfa_states = equal_minimized_dfa_states + non_equal_states
-#print(minimized_dfa_states)
-
+print(minimized_dfa_states)
+#exit()
 nfa_style = convertToNFAStyle(graph)
-
+print(nfa_style)
 (DFA, F) = convertNFAToDFA(nfa_style, accepting_states, minimized_dfa_states)
 
 #[print(i, DFA[i]) for i in DFA]
@@ -593,6 +618,8 @@ nfa_style = convertToNFAStyle(graph)
 #print(minimized_dfa_states)
 string_int = {key : i for i, key in enumerate(list(DFA.keys()))}
 #print(string_int)
+#print(DFA)
+print()
 number_minimized_DFA = convertStringsInDFAToNumbers(DFA, string_int)
 #print(number_minimized_DFA)
 [print(i, number_minimized_DFA[i]) for i, next_states in enumerate(number_minimized_DFA)]
