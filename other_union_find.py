@@ -5,6 +5,7 @@ def findChildAndLength(parent, child):
 		child = parent[child]
 		path_count += 1
 	return child, path_count
+# (1, 2) (2, 3)
 
 def union(parent_graph, pair):
 

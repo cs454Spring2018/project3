@@ -5,12 +5,6 @@ from collections import OrderedDict as od
 import copy
 from functools import reduce
 
-# upgrade so a table is used instead of adjaciency list
-# remove states unreachable
-# bfs
-# after bfs is over read the visited list
-# all items with 0 can be deleted
-
 def Pop(queue):
 	item = queue[0]
 	del queue[0]
@@ -76,6 +70,7 @@ def markWithPreviouslyMarked(i, j, table, new_items_added, graph):
 	#[print(a) for a in table]
 	for jj, ii in next_states:
 		#print(jj, ii)
+		# next state has been marked and the current state has not been marked
 		if table[j][i] == 0 and table[jj][ii] == 1:
 
 			table[j][i] = 1
@@ -217,10 +212,11 @@ def currentStates(current_state):
 def nextStates(A, col, current_states):
 
     current_col = set()
-    
+    #print('current state')
+    #print(current_states)
     #print("HERE")
     for state in current_states:
-        #print(state, " " , col)
+        #print(state, " " , col, ' ', A[state][col])
         for next_state in A[state][col]:
             current_col.add(next_state)
     #print("HERE")
@@ -240,10 +236,15 @@ def nextComboState(A, combo_state, minimized_dfa_states):
 	for col, next_states in enumerate(A[0]):
 		#print(col, next_states, combo_state)
 		current_states = currentStates(combo_state)
-
+		#print(current_states)
 		current_col = nextStates(A, col, current_states)
+		print(col, current_col)
+		#print()
 		next_combo_states.append('_'.join([str(j) for j in current_col]))
-	#print(next_combo_states)
+	print('combo states')
+	print(next_combo_states)
+	#print(minimized_dfa_states)
+
 		#print(minimized_dfa_states)
 		
 		#next_combo_states = [tuple(replacement_next_combo_states)]
@@ -255,15 +256,17 @@ def nextComboState(A, combo_state, minimized_dfa_states):
 		#	replace it with the dfa state in next_combo_states
 		#print("SUPERHERE")
 	#exit()
-
+	print()
+	print(minimized_dfa_states)
+	print()
 	for i, state in enumerate(next_combo_states):
 		#print(i, state)
 		for j, minimized_dfa_combo_state in enumerate(minimized_dfa_states):
 			if set(state.split('_')).intersection(set(minimized_dfa_combo_state.split('_'))) != set():
-
+				#print(minimized_dfa_combo_state)
 				replacement_next_combo_states.append(minimized_dfa_combo_state)
 
-				#print(replacement_next_combo_states)
+				print(replacement_next_combo_states)
 
 		#print(next_combo_states)
 		#print(col)
@@ -271,14 +274,16 @@ def nextComboState(A, combo_state, minimized_dfa_states):
 	#print(replacement_next_combo_states)
 	#print('end of next combo state')
 	#print()
+	#print('replacement combo states')
+	#print(replacement_next_combo_states)
 	return replacement_next_combo_states
 
 def makeRow(B, combo_state, A, next_combo_states):
 
-    row = [] 
-    for i, next_state in enumerate(next_combo_states):
-        row.append(next_state)
-    return row
+	row = [] 
+	for i, next_state in enumerate(next_combo_states):
+		row.append(next_state)
+	return row
 
 def addAcceptingStatesToF(current_combo_state, F, combo_state, accepting_states):
 
@@ -318,9 +323,19 @@ def convertNFAToDFA(A, accepting_states, minimized_dfa_states):
 		B[combo_state] = makeRow(B, combo_state, A, next_combo_states)
 		#print('after adding')
 		#print(unadded_states, next_combo_states)
-
+		#print('1')
+		#print(combo_state)
+		#print(B[combo_state])
+		print()
+		#print(list(B.keys()))
+		#print(unadded_states)
+		#print(next_combo_states)
 		unadded_states = appendNextComboStates(unadded_states, next_combo_states)
-		#print('unadded_states')
+		#print(unadded_states)
+		#print()
+		# the next_combo_states contains self loops(B's keys) and some of minimized_dfa_states
+		# the dict keeps only unadded_states + self loops
+		# the self loops are deleted from unadded_states because they are in B's keys
 		#print(unadded_states)
 
 		#print()
@@ -342,8 +357,13 @@ def convertNFAToDFA(A, accepting_states, minimized_dfa_states):
 		#print(B)
 		#print(list(B_keys))
 		#print()
+		#print('2')
+		#print(list(B.keys()))
+		#print(unadded_states)
+		#print()
 		x = set(unadded_states)
 		y = set(B_keys)
+
 		#print(unadded_states)
 		new_unadded_states = []
 		#print(new_unadded_states)
@@ -394,6 +414,9 @@ def canMerge(pair, id_island_parts):
 	a = set(id_island_parts[ pair[0] ])
 	b = set(id_island_parts[ pair[1] ])
 	c = a.intersection(b)
+	#print(a, b)
+	#print(c)
+	#print(c != set())
 	if c != set():
 		return True
 	return False
@@ -420,8 +443,19 @@ def union(parent, pair):
 	parent_node_0, path_count_0 = findChildAndLength(parent, pair[0])
 	parent_node_1, path_count_1 = findChildAndLength(parent, pair[1])
 
-	parent[ parent_node_1 ] = parent_node_0
+	#parent[ parent_node_1 ] = parent_node_0
+	if path_count_0 == 0 and path_count_1 == 1:
+		parent[ parent_node_0 ] = parent_node_1
 
+	elif path_count_0 == 1 and path_count_1 == 0:
+		parent[ parent_node_1 ] = parent_node_0
+
+	elif path_count_0 == 1 and path_count_1 == 1:
+		parent[ parent_node_1 ] = parent_node_0
+		parent[ pair[1] ] = parent_node_0
+
+	else:
+		parent[ parent_node_1 ] = parent_node_0
 		
 	return parent
 
@@ -433,9 +467,16 @@ def makeIslands(parent, island_parts, id_island_parts):
 	for k, pair in enumerate(pairs):
 
 		if canMerge(pair, id_island_parts):
+			#print('passes')
+			# index pair indexes not the island parts
+			#print(pair)
+			#print(pairs[k])
 
 			parent = union(parent, pairs[k])
-
+		#print([i for i in range(len(parent))])
+		#print(parent)
+		#print()
+# [0, 1, 2, 3, 5, 6, 7]
 	# the distance from all children to their respective parents should = 1
 	parent = compressPaths(parent)
 
@@ -472,13 +513,13 @@ graph = [
 	[5, 5]
 ]
 '''
-
+'''
 graph = [
 	[2],
 	[2],
 	[0]
 ]
-
+'''
 def convertToNFAStyle(dfa):
 
 	new_nfa = []
@@ -528,16 +569,25 @@ NFA = [
 # get rid of unused states
 def minimizeDFA(dfa, alphabet, start_state, accepting_states):
 	x = bfs(dfa, start_state, alphabet, accepting_states)
-
+	print('visited list')
+	print(x)
+	print()
 	#print(x)
 	revised_graph = deleteNodes(dfa, x)
 
-
+	print('nodes with no unreached states')
+	[print(b) for b in revised_graph]
+	print()
 
 	#print(revised_graph)
 	#exit()
 	# collect all pairs of equvalent states
+	# f = markWAcceptingState
+	# g = markWithPreviouslyMarked
 	table = tableFilling(dfa, accepting_states, markWAcceptingState, markWithPreviouslyMarked)
+	print('table')
+	[print(v) for v in table]
+	print()
 	'''
 	table = [
 		[3, 0, 0, 0, 0, 0],
@@ -549,7 +599,6 @@ def minimizeDFA(dfa, alphabet, start_state, accepting_states):
 	]
 	'''
 
-	#counterexample
 	'''
 	table = [
 		[3, 0, 0, 0, 0, 0],
@@ -572,8 +621,9 @@ def minimizeDFA(dfa, alphabet, start_state, accepting_states):
 	'''
 	island_parts = collectIslandParts(table)
 
-
-
+	print('coordinates of empty cells')
+	print(island_parts)
+	print()
 	#print(transitiveProperty(island_parts))
 	#print(island_parts)
 	#print()
@@ -586,50 +636,121 @@ def minimizeDFA(dfa, alphabet, start_state, accepting_states):
 	id_island_parts = { i : island_part for i, island_part in enumerate(island_parts) }
 	#print(id_island_parts)
 
+	#print(parent)
+	#print(id_island_parts)
 	islands = makeIslands(parent, island_parts, id_island_parts)
+	print('collections of states that hold the same states')
+	[print(c, islands[c]) for c in islands]
+	print()
+	#exit()
 	#print(islands)
 	#[print(parent_node, i) for i, parent_node in enumerate(parent)]
 	equal_minimized_dfa_states = makeMinimizedDFAStates(islands, island_parts)
 
-
+	print('minimized dfa states')
+	print(equal_minimized_dfa_states)
+	print()
 	# get the states that are not equal
 	#print(equal_minimized_dfa_states)
+	# takes the list of combo equivalent states and creates a list of all states involved
+	states_that_were_combined = set()
+	for states in [ [ int(a) for a in i.split('_') ] for i in equal_minimized_dfa_states ]:
+		for state in states:
+			states_that_were_combined.add(state)
+
+	print('states that were combined')
+	print(list(states_that_were_combined))
+	#print(set( i for i, edges in enumerate(graph) ) - states_that_were_combined)
+	print()
+	'''
 	equivalent_states = []
 	if equal_minimized_dfa_states != []:
 
-		equivalent_states = reduce( (lambda x, y: x.union(y)), [ set(map(int, i.split('_'))) for i in  equal_minimized_dfa_states ] )
+		equivalent_states = reduce( (lambda x, y: x.union(y)), [ set(map(int, i.split('_'))) for i in equal_minimized_dfa_states ] )
 	else:
 		equivalent_states = set()
 
+	print('equivalent states')
+	print(equivalent_states)
+	print()
+	'''
 	#print(equivalent_states)
 	#print(equivalent_states)
 	#print(set(i for i, edges in enumerate(graph)))
-	non_equal_states = [ str(i) for i in list( set( i for i, edges in enumerate(graph) ) - equivalent_states ) ]
-	#print(non_equal_states)
+	remaining_states = [ str(i) for i in list( set( i for i, edges in enumerate(graph) ) - states_that_were_combined ) ]
+	print('remaining_states')
+	print(remaining_states)
+	print()
+
 
 	#print(equal_minimized_dfa_states)
 
-	minimized_dfa_states = equal_minimized_dfa_states + non_equal_states
-	#print(minimized_dfa_states)
+	minimized_dfa_states = equal_minimized_dfa_states + remaining_states
+	print('minimized dfa states')
+	print(minimized_dfa_states)
+	print()
 	#exit()
 	nfa_style = convertToNFAStyle(graph)
-	#print(nfa_style)
+	print('dfa in nfa data structure')
+	[print(a) for a in nfa_style]
+	print()
 	(DFA, F) = convertNFAToDFA(nfa_style, accepting_states, minimized_dfa_states)
 
-	#[print(i, DFA[i]) for i in DFA]
-	#print(DFA)
+	print('minimized dfa with non enumerated states')
+	[print(i, DFA[i]) for i in DFA]
+	print()
+	print('accepting states')
+	print(F)
+	print()
 	#print(minimized_dfa_states)
 	string_int = {key : i for i, key in enumerate(list(DFA.keys()))}
-	#print(string_int)
+	print('enumerated')
+	print(string_int)
+	print()
 	#print(DFA)
 	#print()
 	number_minimized_DFA = convertStringsInDFAToNumbers(DFA, string_int)
-	#print(number_minimized_DFA)
 	#[print(i, number_minimized_DFA[i]) for i, next_states in enumerate(number_minimized_DFA)]
 	return number_minimized_DFA
-	
-accepting_states = [2, 3, 4]
-alphabet = [0]
+
+graph = [
+	[1, 2],
+	[0, 2],
+	[0, 2]
+]
+
+# will add extra edges if accepting state = 2
+'''
+graph = [
+	[1, 3],
+	[2, 3],
+	[0, 3],
+	[0, 4],
+	[0, 3]
+]
+'''
+'''
+graph = [
+	[1, 3],
+	[2, 3],
+	[0, 3],
+	[0, 3]
+]
+'''
+'''
+graph = [
+	[ 2, 4, 1],
+	[ 2, 5, 5],
+	[ 6, 3, 1],
+	[ 3, 3, 3],
+	[ 2, 0, 1],
+	[ 2, 1, 1],
+	[ 2, 3, 1]
+]
+'''
+accepting_states = [2]
+alphabet = [0, 1]
 start_state = 0
 final_minimized_dfa = minimizeDFA(graph, alphabet, start_state, accepting_states)
+print('final minimized dfa')
 [print(i, final_minimized_dfa[i]) for i, next_states in enumerate(final_minimized_dfa)]
