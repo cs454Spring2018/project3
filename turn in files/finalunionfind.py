@@ -49,7 +49,7 @@ def find(graph, state):
     return graph['parent'][state]
 
 #def findstatetransitions(parent_graph, state):
-    
+
 def getTransitions(parent_graph, state):
     print("parentgraph: ", parent_graph)
     parentlist = parent_graph
@@ -59,7 +59,7 @@ def getTransitions(parent_graph, state):
     for i in parentlist:
         #print("this is i[0]: ", i[0])
         #if parentlist[i][0] == state:
-        if i[0] == state: 
+        if i[0] == state:
             transitions.append(i[1])
             print(state, " goes to state: ", i[1])
     return transitions
@@ -96,64 +96,70 @@ def findpair(parentgraph, belongswith):
         if parentgraph[i] == belongswith:
             #print("if statement hits!")
             pairstates.append(itr)
-        itr+=1 
+        itr+=1
     return pairstates
 
 def unionfindcompare(dfa1file, dfa2file):
-    dfa1, dfa1numstates, dfa1accept = openFile(dfa1file)
-    dfa2, dfa2numstates, dfa2accept = openFile(dfa2file)
-    
-    updateddfa2accept = []
-    for i in dfa2accept:
-        #print("this is i: ", i)
-        updateddfa2accept.append(i+len(dfa1))
+	dfa1, dfa1numstates, dfa1accept = openFile(dfa1file)
+	dfa2, dfa2numstates, dfa2accept = openFile(dfa2file)
 
-    combinedaccept = dfa1accept + updateddfa2accept
-        
-    combineddfa = dfa1 + changestatenames(dfa1, dfa2)
-    
-    parent_graph = od([
-            ('graph', combineddfa),
-            ('parent', createparentlist(combineddfa))
-        ])
-    
-    parent_graph['parent'] = union(parent_graph,(0, len(dfa1)))
+	updateddfa2accept = []
+	for i in dfa2accept:
+	    #print("this is i: ", i)
+	    updateddfa2accept.append(i+len(dfa1))
 
-    stack = []
-    stack.append(findpair(parent_graph['parent'],0))
-    while(len(stack) != 0):
-        print(stack)
-        #singleset should only ever be a pair of 2 states
-        singleset = stack.pop()
-        dfa1state = singleset[0]
-        dfa2state = singleset[1]
-        #print(dfa1state, dfa2state)
-        #for every transition between the 2 states, find the 
-        #sets that they belong to and if they do not equal each
-        #other, union them and push onto stack.
-        alphabetsize = len(parent_graph['graph'][0])
-        #print("size of alphabet: ", len(parent_graph['graph'][0]))
-        #while(alphabetsize > 0):
-        for i in range(alphabetsize):
-            transition1 = findtransition(parent_graph, dfa1state, i)
-            r1 = find(parent_graph, transition1)
-            transition2 = findtransition(parent_graph, dfa2state, i)
-            r2 = find(parent_graph, transition2)
-            print("r1 and r2 = ", r1, r2)
-            if r1 != r2:
-                parent_graph['parent'] = union(parent_graph, (r1,r2))
-                temp = []
-                temp.append(r1)
-                temp.append(r2)
-                stack.append(temp)
-        singleset = []
-    print()
-    #print(combinedaccept)
-    #print(parent_graph['parent'])
-     
-    if checkequivalence(parent_graph, combinedaccept):
-        print("The dfas are equal!")
-    else: print("The dfas are not equal!")
+	combinedaccept = dfa1accept + updateddfa2accept
+
+	combineddfa = dfa1 + changestatenames(dfa1, dfa2)
+
+	parent_graph = od([
+	        ('graph', combineddfa),
+	        ('parent', createparentlist(combineddfa))
+	    ])
+
+	parent_graph['parent'] = union(parent_graph,(0, len(dfa1)))
+
+	stack = []
+	stack.append(findpair(parent_graph['parent'],0))
+	while(len(stack) != 0):
+		print(stack)
+		#singleset should only ever be a pair of 2 states
+		singleset = stack.pop()
+		dfa1state = singleset[0]
+		dfa2state = singleset[1]
+		#print(dfa1state, dfa2state)
+		#for every transition between the 2 states, find the
+		#sets that they belong to and if they do not equal each
+		#other, union them and push onto stack.
+		alphabetsize = len(parent_graph['graph'][0])
+		#print("size of alphabet: ", len(parent_graph['graph'][0]))
+		#while(alphabetsize > 0):
+		for i in range(alphabetsize):
+			transition1 = findtransition(parent_graph, dfa1state, i)
+			r1 = find(parent_graph, transition1)
+			transition2 = findtransition(parent_graph, dfa2state, i)
+			r2 = find(parent_graph, transition2)
+			print("r1 and r2 = ", r1, r2)
+			if r1 != r2:
+				parent_graph['parent'] = union(parent_graph, (r1,r2))
+				temp = []
+				temp.append(r1)
+				temp.append(r2)
+				stack.append(temp)
+		singleset = []
+	print()
+	#print(combinedaccept)
+	#print(parent_graph['parent'])
+	print('dfa 1')
+	[print(a) for a in dfa1]
+	print()
+	print('dfa 2')
+	[print(b) for b in dfa2]
+	print()
+	if checkequivalence(parent_graph, combinedaccept):
+		print("The dfas are equal!")
+
+	else: print("The dfas are not equal!")
 
 def checkequivalence(graph, acceptingstates):
     #for i in acceptingstates:
@@ -202,16 +208,13 @@ def createparentlist(dfa):
     for i in range(len(dfa)):
         parentlist.append(i)
     return parentlist
-     
 
-#should be equal (is the example the pdf describing the alg was using: 
+
+#should be equal (is the example the pdf describing the alg was using:
 #program says they are! woohoo!
-#unionfindcompare('testdfa.txt', 'testdfa2.txt')
+unionfindcompare('testdfa.txt', 'testdfa2.txt')
 
 unionfindcompare('dfa3.txt', 'dfa4.txt')
 
 # dfa6.txt is a minimized version of dfa5.txt
 unionfindcompare('dfa5.txt', 'dfa6.txt')
-
-
-
