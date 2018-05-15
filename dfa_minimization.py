@@ -103,18 +103,11 @@ def markWithPreviouslyMarked(i, j, table, new_items_added, graph):
 	#print()
 	for ii, jj in next_states:
 		#print(ii, jj)
+		# need to check both axies using (ii, jj)
 		if (table[jj][ii] == 1 or table[ii][jj] == 1) and table[j][i] == 0:
-			#print('passes')
 			table[j][i] = 1
 			new_items_added.append((j, i))
 
-		#if table[jj][ii] == 0 or jj <= ii:
-		#	continue
-		# next state has been marked and the current state has not been marked
-		#if table[j][i] == 0 and table[ii][jj] == 1:
-		#	print('passes')
-		#	table[j][i] = 1
-		#	new_items_added.append((j, i))
 	#[print(a) for a in table]
 
 	#print()
@@ -281,7 +274,7 @@ def nextComboState(A, combo_state, minimized_dfa_states):
 		current_states = currentStates(combo_state)
 		#print(current_states)
 		current_col = nextStates(A, col, current_states)
-		print(col, current_col)
+		#print(col, current_col)
 		#print()
 		next_combo_states.append('_'.join([str(j) for j in current_col]))
 	print('combo states')
@@ -300,8 +293,10 @@ def nextComboState(A, combo_state, minimized_dfa_states):
 		#print("SUPERHERE")
 	#exit()
 	print()
+	print('minimized dfa states')
 	print(minimized_dfa_states)
 	print()
+	print('replacement next combo states')
 	for i, state in enumerate(next_combo_states):
 		#print(i, state)
 		for j, minimized_dfa_combo_state in enumerate(minimized_dfa_states):
@@ -611,6 +606,7 @@ NFA = [
 # use nfa to dfa converter to finish the process
 # get rid of unused states
 def minimizeDFA(dfa, alphabet, start_state, accepting_states):
+	print(accepting_states)
 	x = bfs(dfa, start_state, alphabet, accepting_states)
 	print('visited list')
 	print(x)
@@ -682,7 +678,7 @@ def minimizeDFA(dfa, alphabet, start_state, accepting_states):
 	#print(parent)
 	#print(id_island_parts)
 	islands = makeIslands(parent, island_parts, id_island_parts)
-	print('collections of states that hold the same states')
+	print('indicies to coordinates of empty cells whose state represented by coordinates are equivalent')
 	[print(c, islands[c]) for c in islands]
 	print()
 	#exit()
@@ -794,7 +790,7 @@ graph = [
 ]
 
 accepting_states = [3]
-alphabet = [0, 1]
+alphabet = [0, 1, 2]
 start_state = 0
 final_minimized_dfa = minimizeDFA(graph, alphabet, start_state, accepting_states)
 print('final minimized dfa')

@@ -122,6 +122,7 @@ def unionfindcompare(dfa1file, dfa2file):
     stack = []
     stack.append(findpair(parent_graph['parent'],0))
     while(len(stack) != 0):
+        print(stack)
         #singleset should only ever be a pair of 2 states
         singleset = stack.pop()
         dfa1state = singleset[0]
@@ -138,7 +139,7 @@ def unionfindcompare(dfa1file, dfa2file):
             r1 = find(parent_graph, transition1)
             transition2 = findtransition(parent_graph, dfa2state, i)
             r2 = find(parent_graph, transition2)
-            #print("r1 and r2 = ", r1, r2)
+            print("r1 and r2 = ", r1, r2)
             if r1 != r2:
                 parent_graph['parent'] = union(parent_graph, (r1,r2))
                 temp = []
@@ -146,7 +147,7 @@ def unionfindcompare(dfa1file, dfa2file):
                 temp.append(r2)
                 stack.append(temp)
         singleset = []
-    
+    print()
     #print(combinedaccept)
     #print(parent_graph['parent'])
      
@@ -202,26 +203,15 @@ def createparentlist(dfa):
         parentlist.append(i)
     return parentlist
      
-#this is wrong for parent, it counts all transitions not states
-'''
-parent_graph = od([
-        ('graph', graph3),
-        ('parent', [ i for i, next_states in enumerate(graph3)])
-    ])
-'''
-
-'''
-these should be different I think?
-unionfindcompare('dfa3.txt', 'dfa4.txt')
-'''
-
-'''
-these should be equal, the text files are identical
-unionfindcompare('dfa3.txt', 'copydfa3.txt')
-'''
 
 #should be equal (is the example the pdf describing the alg was using: 
 #program says they are! woohoo!
 #unionfindcompare('testdfa.txt', 'testdfa2.txt')
 
 unionfindcompare('dfa3.txt', 'dfa4.txt')
+
+# dfa6.txt is a minimized version of dfa5.txt
+unionfindcompare('dfa5.txt', 'dfa6.txt')
+
+
+
