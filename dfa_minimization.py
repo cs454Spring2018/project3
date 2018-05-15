@@ -65,17 +65,59 @@ def markWithPreviouslyMarked(i, j, table, new_items_added, graph):
 
 	# (j, i) because the j axis starts first
 	#print(graph)
-	next_states = [ [ graph[j][k], graph[i][k] ] for k, edge in enumerate(graph[i]) ]
-	#print(next_states)
-	#[print(a) for a in table]
-	for jj, ii in next_states:
-		#print(jj, ii)
-		# next state has been marked and the current state has not been marked
-		if table[j][i] == 0 and table[jj][ii] == 1:
+	'''
 
+	graph = [
+	[1, 2],
+	[1, 2],
+	[3, 0],
+	[4, 0],
+	[4, 0]
+	
+]
+	(j, i)
+	2 -> 3  on 0
+	1 -> 1 on 0
+	(3, 1)
+
+
+	2 -> 0  on 1
+	1 -> 2 on 1
+	(0, 2)
+	
+
+	[
+	[1, 2],
+	[1, 2]
+	]
+
+	'''
+	#x = [[graph[j][k] for k, edge in enumerate(graph[i]) ]] + [[ graph[i][k] for k, edge in enumerate(graph[i]) ]]
+	#print(x)
+	#print('p q')
+	#print(i, j)
+	#print()
+	next_states = [ [ graph[j][k], graph[i][k] ] for k, edge in enumerate(graph[i]) ]
+	#print('[(r s)]')
+	#print(next_states)
+	#print()
+	for ii, jj in next_states:
+		#print(ii, jj)
+		if (table[jj][ii] == 1 or table[ii][jj] == 1) and table[j][i] == 0:
+			#print('passes')
 			table[j][i] = 1
 			new_items_added.append((j, i))
 
+		#if table[jj][ii] == 0 or jj <= ii:
+		#	continue
+		# next state has been marked and the current state has not been marked
+		#if table[j][i] == 0 and table[ii][jj] == 1:
+		#	print('passes')
+		#	table[j][i] = 1
+		#	new_items_added.append((j, i))
+	#[print(a) for a in table]
+
+	#print()
 
 def tableFilling(dfa, accepting_states, f, g):
 
@@ -106,7 +148,8 @@ def tableFilling(dfa, accepting_states, f, g):
 					f(i, j, table, new_items_added)
 
 				else:
-					g(i, j, table, new_items_added, graph)
+					if table[j][i] != 1:
+						g(i, j, table, new_items_added, graph)
 				i += 1
 			j += 1
 		first_round = False
@@ -712,22 +755,13 @@ def minimizeDFA(dfa, alphabet, start_state, accepting_states):
 	number_minimized_DFA = convertStringsInDFAToNumbers(DFA, string_int)
 	#[print(i, number_minimized_DFA[i]) for i, next_states in enumerate(number_minimized_DFA)]
 	return number_minimized_DFA
-
+'''
 graph = [
 	[1, 2],
 	[0, 2],
 	[0, 2]
 ]
-
-# will add extra edges if accepting state = 2
-'''
-graph = [
-	[1, 3],
-	[2, 3],
-	[0, 3],
-	[0, 4],
-	[0, 3]
-]
+F = {2}
 '''
 '''
 graph = [
@@ -736,8 +770,19 @@ graph = [
 	[0, 3],
 	[0, 3]
 ]
+#F = {2}
 '''
 '''
+graph = [
+	[1, 2],
+	[1, 2],
+	[3, 0],
+	[4, 0],
+	[4, 0]
+	
+]
+'''
+# F = {0}
 graph = [
 	[ 2, 4, 1],
 	[ 2, 5, 5],
@@ -747,8 +792,8 @@ graph = [
 	[ 2, 1, 1],
 	[ 2, 3, 1]
 ]
-'''
-accepting_states = [2]
+
+accepting_states = [3]
 alphabet = [0, 1]
 start_state = 0
 final_minimized_dfa = minimizeDFA(graph, alphabet, start_state, accepting_states)
