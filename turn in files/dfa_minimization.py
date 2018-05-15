@@ -31,7 +31,7 @@ def bfs(state_transition_table, start_state, alphabet, accepting_states):
 			if visited[next_remainder] == 0:
 				visited[next_remainder] = 1
 				queue = Push(queue, next_remainder)
-	
+
 	return visited
 
 def deleteNodes(graph, visited):
@@ -73,7 +73,7 @@ def markWithPreviouslyMarked(i, j, table, new_items_added, graph):
 	[3, 0],
 	[4, 0],
 	[4, 0]
-	
+
 ]
 	(j, i)
 	2 -> 3  on 0
@@ -84,7 +84,7 @@ def markWithPreviouslyMarked(i, j, table, new_items_added, graph):
 	2 -> 0  on 1
 	1 -> 2 on 1
 	(0, 2)
-	
+
 
 	[
 	[1, 2],
@@ -124,7 +124,7 @@ def tableFilling(dfa, accepting_states, f, g):
 			else:
 				row.append(0)
 		table.append(row)
-	
+
 
 	first_round = True
 	new_items_added = [0]
@@ -191,7 +191,7 @@ def collectNeighbors(i, j, table):
 	# all unmarked cells found go into a group
 
 	island = []
-	
+
 
 	# each island is separated by a partial row(each row is not completely used in the program) completely covered in 1's
 	jj = j
@@ -213,7 +213,7 @@ def collectNeighbors(i, j, table):
 			break
 		jj += 1
 	return island
-	
+
 def collectCombos(table):
 	combos = []
 	j = 1
@@ -282,7 +282,7 @@ def nextComboState(A, combo_state, minimized_dfa_states):
 	#print(minimized_dfa_states)
 
 		#print(minimized_dfa_states)
-		
+
 		#next_combo_states = [tuple(replacement_next_combo_states)]
 		#print(next_combo_states)
 
@@ -318,7 +318,7 @@ def nextComboState(A, combo_state, minimized_dfa_states):
 
 def makeRow(B, combo_state, A, next_combo_states):
 
-	row = [] 
+	row = []
 	for i, next_state in enumerate(next_combo_states):
 		row.append(next_state)
 	return row
@@ -494,7 +494,7 @@ def union(parent, pair):
 
 	else:
 		parent[ parent_node_1 ] = parent_node_0
-		
+
 	return parent
 
 def makeIslands(parent, island_parts, id_island_parts):
@@ -518,7 +518,7 @@ def makeIslands(parent, island_parts, id_island_parts):
 	# the distance from all children to their respective parents should = 1
 	parent = compressPaths(parent)
 
-	# group each set of children -> parent in parent so each set can be accessed using the parent key 
+	# group each set of children -> parent in parent so each set can be accessed using the parent key
 	island_id = defaultdict(int)
 
 	for i, parent_node in enumerate(parent):
@@ -590,7 +590,7 @@ graph = [
 	[4, 5],
 	[4, 5],
 	[5, 5],
-	
+
 ]
 '''
 '''
@@ -749,8 +749,9 @@ def minimizeDFA(dfa, alphabet, start_state, accepting_states):
 	#print(DFA)
 	#print()
 	number_minimized_DFA = convertStringsInDFAToNumbers(DFA, string_int)
+	final_accepting_states = [string_int[i] for i in F]
 	#[print(i, number_minimized_DFA[i]) for i, next_states in enumerate(number_minimized_DFA)]
-	return number_minimized_DFA
+	return number_minimized_DFA, final_accepting_states
 '''
 graph = [
 	[1, 2],
@@ -775,7 +776,7 @@ graph = [
 	[3, 0],
 	[4, 0],
 	[4, 0]
-	
+
 ]
 F = {0}
 '''
@@ -792,6 +793,9 @@ graph = [
 accepting_states = [3]
 alphabet = [0, 1, 2]
 start_state = 0
-final_minimized_dfa = minimizeDFA(graph, alphabet, start_state, accepting_states)
+final_minimized_dfa, final_accepting_states = minimizeDFA(graph, alphabet, start_state, accepting_states)
 print('final minimized dfa')
 [print(i, final_minimized_dfa[i]) for i, next_states in enumerate(final_minimized_dfa)]
+print()
+print('final accepting states')
+[print(a) for a in final_accepting_states]
